@@ -1,0 +1,87 @@
+@charset "UTF-8";
+@import url(font-awesome.min.css);
+@import "https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600";
+
+#ulNav > li{
+    display: inline-block;
+    margin-right:25px;
+    margin-top: 25px;
+}
+#ulNav > li > a{
+    color: gray;
+    text-decoration: none;
+    font-size: 15px;
+    padding: 10px;
+    border: 1px solid white;
+    transition: 0.3s;
+    border-radius: 50px;
+}
+
+#ulNav > li > a:hover{
+    background-color: rgba(255, 255, 255, 0);
+    color: black;
+    border: 1px solid black;
+    transition: 0.3s;
+}
+
+#instituteFunc{
+	margin-top: 10%;
+}
+
+#instituteFunc > .container{
+	text-align: center;
+}
+
+#instituteFunc > .container > .row > .col-sm-4{
+	border-right: 1px solid black; 
+	color: #a0a0a0;
+	cursor: pointer;
+	transition: 0.3s;
+}
+
+#instituteFunc > .container > .row > .col-sm-4 > i{
+	font-size: 50px;
+	
+}
+
+#instituteFunc > .container > .row > .col-sm-4:hover{
+	color: black;
+	transition: 0.3s;
+}
+
+#instituteFunc > .container > .row > .col-sm-6{
+    border-right: 1px solid black; 
+    color: #a0a0a0;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#instituteFunc > .container > .row > .col-sm-6 > i{
+    font-size: 50px;
+    
+}
+
+#instituteFunc > .container > .row > .col-sm-6:hover{
+    color: black;
+    transition: 0.3s;
+}
+
+.loadingDiv {
+  border: 10px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 10px solid #3498db;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

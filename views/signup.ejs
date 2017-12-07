@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html >
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,100,300,300italic,400italic,500,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/signupstyle.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script  src="js/signup.js"></script>
+
+</head>
+
+<body>
+  <body>
+  <div class="overlay"></div>
+  <div class="modal position">
+  	<br><br>
+    <span style="color: blue; margin-left: 25px; font-size: 40px;"><b>Coaching</b></span><span style="color: blue; font-size: 30px;">Adda</span>
+    <div class="brand login-text">
+      <strong><span style="font-size:30px;">Sign Up</span></strong><br><br>
+      Sign up as a student<br><br>
+      <strong>OR</strong><br><br> Sign Up as a Coaching Institute
+    </div>
+    <div class="form position">
+      <div class="form-inner">
+        <!-- Tabs-->
+        <div class="tabs">
+          <ul class="tabs">
+            <li class="current" data-tab="member">
+              <a href="#member">As Student</a>
+            </li>
+            <li data-tab="new">
+              <a href="#new">As Institute</a>
+            </li>
+          </ul>
+          <!--Login Form -->
+          <div class="form-content current" id="member" style="margin-top: -20px;">
+            <form id="sign-in" action="/studentSignup" method="post">
+              <input name="name" placeholder="FULL NAME" class="field" required>
+              <input name="email" type="email" placeholder="EMAIL" class="field" required>
+              <input type="password" name="password" placeholder="PASSWORD" class="field" required>
+              <button id="submit" name="sign-in-button" class="flat-button signin">Sign Up</button>
+              <div class="clear"></div>
+              <a style="margin-left: 200px;" href="/login" style="text-decoration: none;">Already a member?</a>
+            </form>
+          </div>
+          <!--Registration form-->
+          <div class="form-content" id="new"  style="margin-top: -20px;">
+            <form id="reg" action="/instituteSignup" method="post">
+              <input name="name" placeholder="INSTITUTE NAME" class="field" required>
+              <input name="email" type="email" placeholder="EMAIL" class="field" required>
+              <input type="password" name="password" placeholder="PASSWORD" class="field" required>
+              <button id="submit" name="register-button" class="flat-button signin">Sign Up</button>
+              <div class="clear"></div>
+              <a style="margin-left: 200px;" href="/login" style="text-decoration: none;">Already a member?</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+  
+
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+  <link href="/css/style.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/instituteHomeCss.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  
+<head>
+  <title>Staff</title>
+</head>
+<body>
+
+  <div class="navbar navbar-fixed-top">
+    <div class="container-fluid">
+        <ul class="navbar-right" id="ulNav">
+            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        </ul>
+    </div>
+  </div>
+
+  <div id="instituteFunc">
+    <div class="container">
+      <p class="lead" style="color: #515151; font-size: 40px">Here are some of the options you may want to use.</p><br><br>
+      <div class="row">
+        <div class="col-sm-6" data-toggle="modal" data-target="#validate" id="view">
+          <i class="fa fa-plus" aria-hidden="true"></i><br><br>
+          <p class="lead">Validate recently joined Institute</p>
+        </div>
+        <div class="col-sm-6" data-toggle="modal" data-target="#accomodation"  style="border-right: 0px">
+          <i class="fa fa-pencil-square-o" aria-hidden="true"></i><br><br>
+          <p class="lead">Enter Details of Accommodation Places</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="validate" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Validate Institutes</h4>
+        </div>
+        <div class="modal-body">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Contacts</th>
+                <th>Email</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+            	<div class="loadingDiv" style="display: none; margin-left: 40%;"></div>
+            </tbody>
+          </table>
+        	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="accomodation" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Enter Details</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <input type="text" class="form-control" id="name" placeholder="Name" required/><br>
+            <input type="text" class="form-control" id="address" placeholder="Address" required/><br>
+            <input type="text" class="form-control" id="city" placeholder="City" required/><br>
+            <input type="text" class="form-control" id="location" placeholder="Location" required/><br>
+            <input type="text" class="form-control" id="rent" placeholder="Rent/Month" required/>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="accButton" class="btn btn-default">Submit</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+  </div>
+	
+</body>
+
+<script type="text/javascript">
+	$(document).on('click', "#view",function(){
+    $('.loadingDiv').show();
+		$.ajax({
+      url : "/validate",
+      type : "GET",
+      success: function(result){
+        $('.loadingDiv').hide();
+        $('#tbody').html('');
+        for(var i=0; i< result.length; i++)
+        {
+          $('#tbody').append('<tr><td>'+result[i].name+'</td><td>'+result[i].contact+'</td><td>'+result[i].email+'</td><td><button class="btn btn-default validate" id="'+result[i].name+'">Validate</button></td></tr>');
+        }
+      },
+      error: function(err){
+        console.log("Error Received: ",err);
+      }
+    });
+  });
+
+  $(document).on('click', ".validate",function(){
+    var name = $(this).attr("id");
+    $.ajax({
+      url : "/validateInstitute?name="+name,
+      type : "GET",
+      success: function(result){
+        if(result==='done')
+        {
+          $("#"+name).hide();
+        }
+      },
+      error: function(err){
+        console.log("Error Received: ",err);
+      }
+    });
+  });
+
+  $(document).on('click', "#accButton",function(){
+
+    $.ajax({
+      url : "/accommodationDetails?name="+$('#name').val()+"&city="+$('#city').val()+"&location="+$('#location').val()+"&address="+$('#address').val()+"&rent="+$('#rent').val(),
+      type : "GET",
+      success: function(result){
+          alert("Details Submitted!!");
+          $('#name').val('');
+          $('#address').val('');
+          $('#city').val('');
+          $('#location').val('');
+          $('#rent').val('');
+      },
+      error: function(err){
+        console.log("Error Received: ",err);
+      }
+    });
+  });
+
+</script>
+</html>

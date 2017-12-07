@@ -1,0 +1,180 @@
+<html>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="/css/welcome.css">
+<head>
+  <title>Home</title>
+</head>
+<body>
+
+  <div class="navbar navbar-fixed-top">
+    <div class="container-fluid">
+        <ul class="navbar-right" id="ulNav">
+            <li><a href="#" data-toggle="modal" data-target="#profileStudent"><i class="fa fa-cogs" aria-hidden="true"></i>Profile</a></li>
+            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        </ul>
+    </div>
+  </div>
+
+  <div id="studentFunc">
+    <div class="container">
+      <p class="lead" style="color: #515151; font-size:40px">Here are some of the options you may want to use.</p><br><br>
+      <div class="row">
+        <a href="/institutes" style="text-decoration: none;">
+          <div class="col-sm-4">
+            <i class="fa fa-search" aria-hidden="true"></i><br><br>
+            <p class="lead">Use our advanced search to find the best institute</p>
+          </div>
+        </a>
+        <a href="#" style="text-decoration: none;">
+          <div class="col-sm-4" data-toggle="modal" data-target="#accommodation">
+            <i class="fa fa-search" aria-hidden="true"></i><br><br>
+            <p class="lead">Search for Accommodations</p>
+          </div>
+        </a>
+        <a href="#" style="text-decoration: none;">
+          <div class="col-sm-4" data-toggle="modal" data-target="#payFees" style="border-right: 0px">
+            <i class="fa fa-shopping-cart" aria-hidden="true"></i><br><br>
+            <p class="lead">Pay the fees to join the institute of your choice</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="profileStudent" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Edit Your Profile</h4>
+        </div>
+        <div class="modal-body">
+          <form action="/profileStudent" method="post" onsubmit="alert('Profile Updated Successfully!');">
+            <select id="selectOne" name="type" class="form-control" id="location" name="location"  style="width: 20%" required>
+              <option selected>What to edit?
+                <option value="contact">Contact No.</option>
+                <option value="email">Email</option>
+                <option value="password">Password</option>
+            </select><br>
+            <div class="form-group">
+              <label>Field </label>
+              <input type="text" class="form-control" name="field" required>
+            </div>
+            <br>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-default">Edit</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="accommodation" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Search for accommodations</h4><br>
+          <div class="form-inline">
+            <select class="form-control" id="cityAcc" name="city" style="width: 20%">
+              <option selected value="Select">Select City</option>
+              <option value="Jaipur">Jaipur</option>
+              <option value="Lucknow">Lucknow</option>
+              <option value="Delhi">Delhi</option>
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <select class="form-control" id="locationAcc" name="location"  style="width: 20%">
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <button id="searchAcc" class="btn btn-default">Search</button>
+          <div>
+        </div>
+        <div class="modal-body">
+          <div class="loadingDiv" style="display: none; margin-left: 40%;"></div>
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>City</th>
+                <th>Location</th>
+                <th>Rent</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+
+      $("#cityAcc").change(function() {
+        var val = $(this).val();
+        if (val == "Lucknow") {
+            $("#locationAcc").html("<option selected='Select Location' value='SelectLocation'>Select Location</option><option value='Alambagh'>Alambagh</option><option value='Hazratganj'>Hazratganj</option><option value='Gomti Nagar'>Gomti Nagar</option>");
+            //$("#location").style.display = "inline-block";
+
+        } else if (val == "Jaipur") {
+            $("#locationAcc").html("<option selected='Select Location' value='SelectLocation'>Select Location</option><option value='Mahavir Nagar'>Mahavir Nagar</option><option value='Raja Park'>Raja Park</option><option value='Vaishali Nagar'>Vaishali Nagar</option>");
+            //$("#location").style.display = "inline-block";
+
+        } else if (val == "Delhi") {
+            $("#locationAcc").html("<option selected='Select Location' value='SelectLocation'>Select Location</option><option value='Karolbagh'>Karolbagh</option><option value='Connaught Place'>Connaught Place</option><option value='Patel Nagar'>Patel Nagar</option>");
+
+        }
+      });
+    });
+
+    $('#searchAcc').on('click',function(event){
+        $('.loadingDiv').show();
+        event.preventDefault();
+        event.stopPropagation();
+        $.ajax({
+          url : "/searchAccommodation?cityAcc="+$('#cityAcc').val()+"&locationAcc="+$('#locationAcc').val(),
+          type : "GET",
+          dataType: 'json',
+          success: function(result){
+
+            $('.loadingDiv').hide();
+            $('#tbody').html('');
+
+            if($('#locationAcc').val()=='SelectLocation') //Only Name
+            {
+              console.log(result[0].name);
+              for(var i=0; i< result.length; i++)
+              {
+                $('#tbody').append('<tr><td>'+result[i].name+'</td><td>'+result[i].address+'</td><td>'+result[i].city+'</td><td>'+result[i].location+'</td><td>'+result[i].rent+'</td></tr>');
+              }
+            }
+            else
+            {
+              for(var i=0; i< result.length; i++)
+              {
+                $('#tbody').append('<tr><td>'+result[i].name+'</td><td>'+result[i].address+'</td><td>'+result[i].city+'</td><td>'+result[i].location+'</td><td>'+result[i].rent+'</td></tr>');
+              }
+            }
+          },
+          error: function(err){
+            console.log("Error Received: ",err);
+          }
+        });
+      });
+
+    </script>
+
+</html>

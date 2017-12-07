@@ -1,0 +1,72 @@
+<html>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+  <link href="/css/style.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/css/institutes.css">
+<head>
+  <title>Home</title>
+  <style type="text/css">
+    body{
+      background-image: url('/images/');
+      background-size: cover;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar navbar-fixed-top">
+    <div class="container-fluid">
+        <ul class="navbar-right" id="ulNav">
+            <li><a href="/profile"><i class="fa fa-cogs" aria-hidden="true"></i> Profile</a></li>
+            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        </ul>
+    </div>
+  </div>
+  <br><br><br><br><br>
+  <h1><center>Search for Institutes...<center></h1><br>
+
+  <div class="container form-group">
+    <form action="/institutes" method="post">
+      <input type="text" class="form-control" name="tag" placeholder="Search term..." required><br>
+      <select id="city" name="city" class="form-control"   style="width: 20%">
+        <option selected>Select City</option>
+        <option value="Jaipur">Jaipur</option>
+        <option value="Lucknow">Lucknow</option>
+        <option value="Delhi">Delhi</option>
+      </select><br>
+      <select id="location" name="location" class="form-control"   style="width: 20%">
+        
+      </select>
+      <input id="search" class="btn btn-primary" value="Search" type="submit" style="margin-top:30px; margin-left: 550px;"">
+    </form>
+  </div>
+
+  <script type="text/javascript" src="/js/jquery.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+
+      $("#city").change(function() {
+        var val = $(this).val();
+        if (val == "Lucknow") {
+            $("#location").html("<option selected='Select Location'>Select Location</option><option value='Alambagh'>Alambagh</option><option value='Hazratganj'>Hazratganj</option><option value='Gomti Nagar'>Gomti Nagar</option>");
+            $("#location").style.display = "inline-block";
+
+        } else if (val == "Jaipur") {
+            $("#location").html("<option selected='Select Location'>Select Location</option><option value='Mahavir Nagar'>Mahavir Nagar</option><option value='Raja Park'>Raja Park</option><option value='Vaishali Nagar'>Vaishali Nagar</option>");
+            $("#location").style.display = "inline-block";
+
+        } else if (val == "Delhi") {
+            $("#location").html("<option selected='Select Location'>Select Location</option><option value='Karolbagh'>Karolbagh</option><option value='Connaught Place'>Connaught Place</option><option value='Patel Nagar'>Patel Nagar</option>");
+            $("#location").style.display = "inline-block";
+
+        }
+      });
+
+
+    });
+    
+  </script>
+
+</body>
+</html>

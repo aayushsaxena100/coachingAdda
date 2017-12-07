@@ -1,0 +1,301 @@
+<html>
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
+  <link href="/css/style.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/css/institutes.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <title>Home</title>
+</head>
+<body>
+
+  <div class="navbar navbar-fixed-top">
+    <div class="container-fluid">
+        <ul class="navbar-right" id="ulNav">
+            <li><a href="#" data-toggle="modal" data-target="#profileStudent"><i class="fa fa-cogs" aria-hidden="true"></i> Profile</a></li>
+            <li><a href="/logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        </ul>
+    </div>
+  </div>
+  <br><br><br><br><br>
+  <h1><center>Search for Institutes...</center></h1><br>
+
+  <div class="container form-group">
+    <form>
+      <input type="text" class="form-control" name="tag" id="tag" placeholder="Search term..." required><br>
+      <select class="form-control" id="city" name="city" style="width: 20%">
+        <option selected value="Select">Select City</option>
+        <option value="Jaipur">Jaipur</option>
+        <option value="Lucknow">Lucknow</option>
+        <option value="Delhi">Delhi</option>
+      </select><br><br>
+      <select class="form-control" id="location" name="location"  style="width: 20%">
+        
+      </select>
+      <button id="search" class="btn btn-default" value="Search" style="margin-top:30px; margin-left: 550px;">Search</button>
+      <br><br>
+    </form>
+  </div>
+
+  <div class="loadingDiv" style="display: none;margin-left: 45%;"></div>
+
+  <div class="container" id="gridView">
+    <div class="row">
+      
+    </div>
+  </div>
+
+  <div class="modal fade" id="profileStudent" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Edit Your Profile</h4>
+        </div>
+        <div class="modal-body">
+          <form action="/profileInstitute" method="post" onsubmit="alert('Profile Updated Successfully!');">
+            <select id="selectOne" name="type" class="form-control" id="location" name="location"  style="width: 20%" required>
+              <option selected>What to edit?</option>
+                <option value="contact">Contact No.</option>
+                <option value="email">Email</option>
+                <option value="password">Password</option>
+            </select><br>
+            <div class="form-group">
+              <label>Field </label>
+              <input type="text" class="form-control" name="field" required>
+            </div>
+            <br>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-default">Edit</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="rate" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Rate This Institute</h4>
+        </div>
+        <div class="modal-body">
+            <fieldset class="rating" id="rate">
+              <input type="hidden" name="branchId" id="branchIdRate" value=""/>
+              <input type="hidden" name="tag" id="instNameRate" value=""/>
+              <input type="radio" id="star5" name="rating" value="5" />
+              <label class = "full" for="star5" title="Awesome - 5 stars"></label>
+              <input type="radio" id="star4" name="rating" value="4" />
+              <label class = "full" for="star4" title="Pretty good - 4 stars"></label>
+              <input type="radio" id="star3" name="rating" value="3" />
+              <label class = "full" for="star3" title="Average - 3 stars"></label>
+              <input type="radio" id="star2" name="rating" value="2" />
+              <label class = "full" for="star2" title="Kinda bad - 2 stars"></label>
+              <input type="radio" id="star1" name="rating" value="1" />
+              <label class = "full" for="star1" title="Sucks big time - 1 star"></label>
+            </fieldset>
+        </div>
+        <div class="modal-footer">
+          <button id="rateButton" class="btn btn-default">Rate</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" id="review" role="dialog" style="height: 100%; overflow-y: scroll;">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Rate This Institute</h4>
+        </div>
+        <div class="modal-body">
+          <form action="/review" method="post">
+              <input type="hidden" name="branchId" id="branchIdReview" value=""/>
+              <input type="hidden" name="tag" id="instNameReview" value=""/>
+              <textarea class="form-control" rows="5" name="comment"></textarea>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-default">Comment</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" id="details" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Details of Institute</h4>
+        </div>
+        <div class="modal-body" id="viewDetails">
+          <div class="loadingDiv" id="ld" style="display: none; margin-left: 40%;"></div>
+          
+        </div>
+        <div class="modal-footer">    
+              <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  </body>
+
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+
+      $("#city").change(function() {
+        var val = $(this).val();
+        if (val == "Lucknow") {
+            $("#location").html("<option selected='Select Location' value='SelectLocation'>Select Location</option><option value='Alambagh'>Alambagh</option><option value='Hazratganj'>Hazratganj</option><option value='Gomti Nagar'>Gomti Nagar</option>");
+            //$("#location").style.display = "inline-block";
+
+        } else if (val == "Jaipur") {
+            $("#location").html("<option selected='Select Location' value='SelectLocation'>Select Location</option><option value='Mahavir Nagar'>Mahavir Nagar</option><option value='Raja Park'>Raja Park</option><option value='Vaishali Nagar'>Vaishali Nagar</option>");
+            //$("#location").style.display = "inline-block";
+
+        } else if (val == "Delhi") {
+            $("#location").html("<option selected='Select Location' value='SelectLocation'>Select Location</option><option value='Karolbagh'>Karolbagh</option><option value='Connaught Place'>Connaught Place</option><option value='Patel Nagar'>Patel Nagar</option>");
+            //$("#location").style.display = "inline-block";
+
+        }
+      });
+
+      $('#search').on('click',function(event){
+        $('.row').html('');
+        $('.loadingDiv').show();
+        event.preventDefault();
+        event.stopPropagation();
+        $.ajax({
+          url : "/searchInstitutes?tag="+$('#tag').val()+"&city="+$('#city').val()+"&location="+$('#location').val(),
+          type : "GET",
+          dataType: 'json',
+          success: function(result){
+
+            $('.loadingDiv').hide();
+
+            if($('#city').val()=='Select') //Only Name
+            {
+              console.log(result[0].branches[0].address);
+              for (var i=0; i < result[0].branches.length; i++)
+              {
+                var bId = result[0].branches[i].branchId;
+                $('.row').append('<div class="col-sm-4"><div class="data">'+'<b>Address : </b>'+result[0].branches[i].address+'<br>'+'<b>City : </b>'+result[0].branches[i].city+'<br>'+'<b>Location : </b>'+result[0].branches[i].location+'<br>'+'<b>Contact : </b>'+result[0].branches[i].contact+'<br>'+'<b>Percent : </b>'+result[0].branches[i].percent+'<br><br><button id="r'+bId+'" class="btn btn-default extra" data-toggle="modal" data-target="#rate">Rate</button>&nbsp;&nbsp;<button id="v'+bId+'" class="btn btn-default extra" data-toggle="modal" data-target="#review">Review</button>&nbsp;&nbsp;<button id="d'+bId+'" class="btn btn-default details" data-toggle="modal" data-target="#details">View Details</button></div></div>');
+              }
+            }
+            else if($('#location').val()=='SelectLocation') // Name + City
+            {
+              console.log('hoo'+result[0].address);
+              for (var i=0; i < result.length; i++)
+              {
+                $('.row').append('<div class="col-sm-4"><div class="data">'+'<b>Address : </b>'+result[i].address+'<br>'+'<b>City : </b>'+result[i].city+'<br>'+'<b>Location : </b>'+result[i].location+'<br>'+'<b>Contact : </b>'+result[i].contact+'<br>'+'<b>Percent : </b>'+result[i].percent+'<br><br><button value='+result[i].branchId+'class="btn btn-default"  data-toggle="modal" data-target="#rate">Rate</button>&nbsp;&nbsp;<button value='+result[i].branchId+'class="btn btn-default">Review</button>&nbsp;&nbsp;<button value='+result[i].branchId+' class="btn btn-default">View Details</button></div></div>');
+              }
+            }
+            else  // Name + City + Location
+            {
+              var bId = result.branchId;
+              $('.row').append('<div class="col-sm-4"><div class="data">'+'<b>Address : </b>'+result.address+'<br>'+'<b>City : </b>'+result.city+'<br>'+'<b>Location : </b>'+result.location+'<br>'+'<b>Contact : </b>'+result.contact+'<br>'+'<b>Percent : </b>'+result.percent+'<br><br><button id="r'+bId+'" class="btn btn-default extra" data-toggle="modal" data-target="#rate">Rate</button>&nbsp;&nbsp;<button id="v'+bId+'" class="btn btn-default extra" data-toggle="modal" data-target="#review">Review</button>&nbsp;&nbsp;<button id="d'+bId+'" class="btn btn-default details" data-toggle="modal" data-target="#details">View Details</button></div></div>');
+            }
+          },
+          error: function(err){
+            console.log("Error Received: ",err);
+          }
+        });
+      });
+      $(document).on('click', ".extra",function(){
+        var get = $(this).attr("id");
+        console.log(typeof(get));
+        var ID = get.substr(1,get.length-1);
+        var tag = $('#tag').val();
+        if(get[0]==='r'){
+          $('#branchIdRate').val(ID);
+          $('#instNameRate').val(tag);
+        }
+        else if(get[0]==='v'){
+          $('#branchIdReview').val(ID);
+          $('#instNameReview').val(tag);
+        }
+      });
+    });
+
+      /*View Details -- RATING AND REVIEWS*/
+
+
+      $(document).on('click', ".details",function(event){
+        var get = $(this).attr("id");
+        $('#ld').show();
+        
+        var ID = get.substr(1,get.length-1);
+        var tag = $('#tag').val();
+        $('#branchIdDetails').val(ID);
+        
+        $('#instNameDetails').val(tag);
+
+        $.ajax({
+          url : "/viewDetails?tag="+tag+"&branchId="+ID,
+          type : "GET",
+          dataType: 'json',
+          success: function(result){
+            $('#ld').hide();
+            $('#viewDetails').html('');
+            var avgRating = parseInt(result.avgRating);
+            if(avgRating>0){
+              for(var i=0; i<avgRating; i++){
+              $('#viewDetails').append('<span class="fa fa-star checked"></span>');
+              }
+              for(var i=0; i<5-avgRating;i++){
+                $('#viewDetails').append('<span class="fa fa-star"></span>');  
+              }
+              $('#viewDetails').append('<br><br>');  
+            }
+            else{
+              for(var i=0; i<5;i++){
+                $('#viewDetails').append('<span class="fa fa-star"></span>');  
+              }
+              $('#viewDetails').append('<br><br>');
+            }
+            if(result.comment.length>0){
+              for (var i=0; i < result.comment.length; i++)
+              {
+                $('#viewDetails').append('<div id="comments"><p class="lead">'+result.comment[i]+'</p></div><br>');
+              }
+            }
+            else{
+              $('#viewDetails').html('<div id="comments"><p class="lead">No comments yet!</p></div><br>');
+            } 
+          },
+          error: function(err){
+            console.log("Error Received: ",err);
+          }
+        });
+      });
+
+      $('#rateButton').on('click',function(event){
+        
+        event.preventDefault();
+        event.stopPropagation();
+
+        var stars = $('input[name=rating]:checked', '#rate').val();
+        $.ajax({
+          url : "/rate?tag="+$('#tag').val()+"&city="+$('#city').val()+"&location="+$('#location').val(),
+          type : "POST",
+          dataType: 'json',
+          success: function(result){
+            alert("Your response has been recorded!");
+          },
+          error: function(){
+            console.log("Error Received: ",err);            
+          }
+        });
+      });
+  </script>
+</html>
