@@ -4,5 +4,6 @@ Done using: node.js, mongoDB, ExpressJS, AJAX
 To run this app on localhost:(make sure node.js and npm(node package manager) are installed)
 1. Open terminal/cmd.
 2. cd to the directory.
-3. run the command "npm start"
-4. open browser and open "localhost:3000"
+3. run "npm install"
+4. run "npm start"
+5. open browser and open "localhost:3000"
