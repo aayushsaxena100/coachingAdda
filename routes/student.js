@@ -1,54 +1,66 @@
 var router = require('express').Router();
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 router.post('/studentSignup', function (req, res) {
 
-    // Set our internal DB variable
-    var db = req.db;
-
-    // Get our form values. These rely on the "name" attributes
-    var name = req.body.name;
-    var email = req.body.email;
-    var password = req.body.password;
-
-    // Set our collection
-    var collection = db.collection('students');
-
-    // Submit to the DB
-    collection.insert({
-        "email": email,
-        "password": password,
-        "name": name
-    }, function (err, doc) {
+    var collection = req.db.collection('students');
+    collection.findOne({ email: req.body.email }, function (err, user) {
         if (err) {
-            // If it failed, return error
-            res.send("There was a problem adding the information to the database.");
+            console.log(err);
+            return res.status(500).send('There was some error in sigining you up. Please try again after some time.');
         }
-        else {
-            // And forward to success page
-            res.render('login');
+        else if (user) {
+            return res.status(500).send('A student by that email already exists.');
         }
+    });
+
+    bcrypt.hash(req.body.password, saltRounds, function (err, passwordHash) {
+        if (err) {
+            console.log(err);
+            res.status(500).send('There was some error in sigining you up. Please try again after some time.');
+        }
+        collection.insertOne({
+            "email": req.body.email,
+            "password": passwordHash,
+            "name": req.body.name
+        }, function (err, doc) {
+            if (err) {
+                // If it failed, return error
+                res.send("There was a problem adding the information to the database.");
+            }
+            else {
+                // And forward to success page
+                res.render('login');
+            }
+        });
     });
 });
 
 router.get('/studentsignin', function (req, res) {
-    var db = req.db;
 
-    var email = req.body.email;
-    var password = req.body.password;
+    var collection = req.db.collection('students');
 
-    var collection = db.collection('students');
-    console.log(req.body.email + " " + req.body.password);
-    collection.findOne({ email: email, password: password }, function (err, user) {
+    collection.findOne({ email: req.body.email }, function (err, user) {
         if (err) {
             console.log(err);
             return res.status(500).send();
         }
-        if (!user) {
-            res.render('invalid');
-            return res.status(401).send();
-        }
-        req.session.user = user;
-        res.render('welcome', { user: user });
+        bcrypt.compare(req.body.password, user.password, function (err, result) {
+            if (err) {
+                console.log(err);
+                return res.status(500).send('There was some error in logging you in.');
+            }
+            if (result) {
+                req.session.user = user;
+                res.render('welcome', { user: user });
+                return res.status(200).send();
+            }
+            else {
+                res.render('invalid');
+                return res.status(401).send();
+            }
+        });
     });
 });
 

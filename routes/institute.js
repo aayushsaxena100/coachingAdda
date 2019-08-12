@@ -1,88 +1,40 @@
 var router = require('express').Router();
-
-router.get('/searchInstitutes', function (req, res) {
-
-    var db = req.db;
-    var tag = req.query.tag;
-    var city = req.query.city;
-    var location = req.query.location;
-    var collection = db.get('coachinginstitutes');
-
-    if (city === "Select") {
-
-        collection.find({ name: tag }, function (err, institute) {
-            if (err) {
-                console.log(err);
-                return res.status(500).send();
-            }
-            res.send(institute);
-        });
-    }
-    else if (location === "SelectLocation") {
-        collection.find({ name: tag }, function (err, institute) {
-            if (err) {
-                console.log(err);
-                return res.status(500).send();
-            }
-            var i;
-            var result = [];
-
-            for (i in institute.branches) {
-                if (institute.branches[i].city === city) {
-                    result.push(institute.branches[i]);
-                }
-            }
-            res.send(result);
-            //res.render('result',{institute: institute});
-        });
-    }
-    else {
-        collection.findOne({ name: tag }, function (err, institute) {
-            if (err) {
-                console.log(err);
-                return res.status(500).send();
-            }
-            var i;
-            for (i in institute.branches) {
-                if (institute.branches[i].city === city && institute.branches[i].location === location) {
-                    break;
-                }
-            }
-            res.send(institute.branches[i]);
-            //res.render('result',{institute: institute});
-        });
-    }
-});
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 router.post('/instituteSignup', function (req, res) {
 
-    // Set our internal DB variable
-    var db = req.db;
+    var collection = req.db.get('coachinginstitutes');
 
-    // Get our form values. These rely on the "name" attributes
-    var name = req.body.name;
-    var email = req.body.email;
-    var password = req.body.password;
-
-    // Set our collection
-    var collection = db.get('coachinginstitutes');
-
-    // Submit to the DB
-    collection.insert({
-        "email": email,
-        "password": password,
-        "name": name,
-        "valid": "no",
-        "branches": [],
-    }, function (err, doc) {
+    collection.findOne({ email: req.body.email }, function (err, user) {
         if (err) {
-            // If it failed, return error
-            res.send("There was a problem adding the information to the database.");
+            console.log(err);
+            return res.status(500).send('There was some error in sigining you up. Please try again after some time.');
         }
-        else {
-            // And forward to success page
-            res.render('login');
+        else if (user) {
+            return res.status(500).send('A coaching institute by that email already exists.');
         }
+    });
+
+    bcrypt.hash(req.body.password, saltRounds, function (err, passwordHash) {
+        if (err) {
+            console.log(err);
+            res.status(500).send('There was some error in sigining you up. Please try again after some time.');
+        }
+        collection.insertOne({
+            "email": req.body.email,
+            "password": passwordHash,
+            "name": req.body.name
+        }, function (err, doc) {
+            if (err) {
+                // If it failed, return error
+                res.send("There was a problem adding the information to the database.");
+            }
+            else {
+                // And forward to success page
+                res.render('login');
+            }
+        });
     });
 });
 
