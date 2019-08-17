@@ -1,11 +1,15 @@
+var authorize = require('../middlewares/authorization');
 var router = require('express').Router();
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const saltRounds = 10;
 
 router.post('/studentSignup', function (req, res) {
 
     var collection = req.db.collection('students');
+
     collection.findOne({ email: req.body.email }, function (err, user) {
+
         if (err) {
             console.log(err);
             return res.status(500).send('There was some error in sigining you up. Please try again after some time.');
@@ -16,6 +20,7 @@ router.post('/studentSignup', function (req, res) {
     });
 
     bcrypt.hash(req.body.password, saltRounds, function (err, passwordHash) {
+
         if (err) {
             console.log(err);
             res.status(500).send('There was some error in sigining you up. Please try again after some time.');
@@ -51,14 +56,18 @@ router.get('/studentsignin', function (req, res) {
                 console.log(err);
                 return res.status(500).send('There was some error in logging you in.');
             }
-            if (result) {
-                req.session.user = user;
-                res.render('welcome', { user: user });
-                return res.status(200).send();
-            }
-            else {
+            if (!result) {
                 res.render('invalid');
                 return res.status(401).send();
+            }
+            else {
+                const jwtPayload = {
+                    user_id: user._id
+                }
+                const authJwtToken = jwt.sign(jwtPayload, process.env.SECRET);
+                res.set('Authorization', authJwtToken);
+
+                return res.status(200).send({ accessToken: authJwtToken });
             }
         });
     });
@@ -120,12 +129,9 @@ router.get('/searchInstitutes', function (req, res) {
 
 router.get('/viewDetails', function (req, res) {
 
-    var db = req.db;
-    var tag = req.query.tag;
-    var branchId = req.query.branchId;
-    var collection = db.collection('coachinginstitutes');
+    var collection = req.db.collection('coachinginstitutes');
 
-    collection.findOne({ name: tag }, function (err, institute) {
+    collection.findOne({ name: req.query.tag }, function (err, institute) {
         if (err) {
             console.log(err);
             return res.status(500).send();
@@ -136,7 +142,7 @@ router.get('/viewDetails', function (req, res) {
             "comment": []
         };
         for (i in institute.branches) {
-            if (institute.branches[i].branchId === branchId) {
+            if (institute.branches[i].branchId === req.query.branchId) {
                 break;
             }
         }
@@ -151,59 +157,55 @@ router.get('/viewDetails', function (req, res) {
 
 router.post('/profileStudent', function (req, res) {
 
-    var type = req.body.type;
-    var field = req.body.field;
+    var collection = req.db.collection('students');
 
-    var db = req.db;
+    switch (req.body.type) {
+        case 'contact':
+            {
+                collection.update({ name: req.session.user.name }, { "$set": { "contact": req.body.field } }, function (err, doc) {
 
-    var collection = db.collection('students');
+                    if (err) {
+                        res.send("There was a problem adding the information to the database.");
+                    }
+                    else {
+                        res.status(200).send('contact updated successfully');
+                    }
+                });
+            }
 
-    if (type === "contact") {
-        collection.update({ name: req.session.user.name }, { "$set": { "contact": field } }, function (err, doc) {
-            if (err) {
-                // If it failed, return error
-                res.send("There was a problem adding the information to the database.");
+        case "password":
+            {
+                collection.update({ name: req.session.user.name }, { "$set": { "password": field } }, function (err, doc) {
+
+                    if (err) {
+                        res.send("There was a problem adding the information to the database.");
+                    }
+                    else {
+                        return res.status(200).send('password updated successfully');
+                    }
+                });
             }
-            else {
-                // And forward to success page
-                res.render('welcome');
+
+        case 'email':
+            {
+                collection.update({ name: req.session.user.name }, { "$set": { "email": field } }, function (err, doc) {
+
+                    if (err) {
+                        res.send("There was a problem adding the information to the database.");
+                    }
+                    else {
+                        res.status(200).send('email updated successfully');
+                    }
+                });
             }
-        });
-    }
-    else if (type === "password") {
-        collection.update({ name: req.session.user.name }, { "$set": { "password": field } }, function (err, doc) {
-            if (err) {
-                // If it failed, return error
-                res.send("There was a problem adding the information to the database.");
-            }
-            else {
-                // And forward to success page
-                res.render('welcome');
-            }
-        });
-    }
-    else if (type === "email") {
-        collection.update({ name: req.session.user.name }, { "$set": { "email": field } }, function (err, doc) {
-            if (err) {
-                // If it failed, return error
-                res.send("There was a problem adding the information to the database.");
-            }
-            else {
-                // And forward to success page
-                res.render('welcome');
-            }
-        });
     }
 });
 
 router.post('/rate', function (req, res) {
-    var rating = req.body.rating;
-    var branchId = req.body.branchId;
-    var db = req.db;
-    var tag = req.body.tag;
-    var collection = db.collection('coachinginstitutes');
 
-    collection.update({ name: tag, "branches.branchId": branchId }, { "$inc": { "branches.$.rating": parseInt(rating) } }, function (err, institute) {
+    var collection = req.db.collection('coachinginstitutes');
+
+    collection.update({ name: req.body.tag, "branches.branchId": req.body.branchId }, { "$inc": { "branches.$.rating": parseInt(req.body.rating) } }, function (err, institute) {
         if (err) {
             console.log(err);
             return res.status(500).send();
@@ -215,39 +217,34 @@ router.post('/rate', function (req, res) {
             return res.status(500).send();
         }
     });
-    res.render('institutes');
+    //res.render('institutes');
+    return res.status(200).send('rated successfully');
 });
 
-router.post('/review', function (req, res) {
-    var comment = req.body.comment;
-    var branchId = req.body.branchId;
-    var db = req.db;
-    var tag = req.body.tag;
-    var collection = db.collection('coachinginstitutes');
-    console.log(branchId);
-    collection.update({ name: tag, "branches.branchId": branchId }, { "$push": { "branches.$.comment": comment } }, function (err, institute) {
+router.post('/review', authorize, function (req, res) {
+
+    var collection = req.db.collection('coachingInstitutes');
+
+    collection.updateOne({ name: req.body.tag, "branches.branchId": req.body.branchId }, { "$push": { "branches.$.comment": req.body.comment } }, function (err, institute) {
         if (err) {
             console.log(err);
             return res.status(500).send();
         }
     });
-    res.render('institutes');
+    //res.render('institutes');
+    return res.status(200).send('added review successfully');
 });
 
 router.get('/searchAccommodation', function (req, res) {
 
-    var db = req.db;
-    var city = req.query.cityAcc;
-    var location = req.query.locationAcc;
-    var collection = db.collection('accommodation');
+    var collection = req.db.collection('accommodation');
 
-    if (location === "SelectLocation") {
-        collection.find({ "city": city }, function (err, acc) {
+    if (req.query.locationAcc === "SelectLocation") {
+        collection.find({ "city": req.query.cityAcc }, function (err, acc) {
             if (err) {
                 console.log(err);
                 return res.status(500).send();
             }
-            console.log(acc);
             res.send(acc);
             //res.render('result',{institute: institute});
         });
@@ -258,7 +255,6 @@ router.get('/searchAccommodation', function (req, res) {
                 console.log(err);
                 return res.status(500).send();
             }
-            console.log(acc);
             res.send(acc);
             //res.render('result',{institute: institute});
         });

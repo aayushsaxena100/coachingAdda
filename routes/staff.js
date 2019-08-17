@@ -1,78 +1,66 @@
 var router = require('express').Router();
+var authorize = require('../middlewares/authorization');
 
 router.get('/staffLogin', function (req, res) {
-    res.render('staffLogin');
-});
 
-router.post('/staffLogin', function (req, res) {
-    var db = req.db;
-    var username = req.body.username;
-    var password = req.body.password;
-    var collection = db.get('staff');
+    var collection = req.db.collection('staff');
 
-    collection.findOne({ username: username, password: password }, function (err, user) {
+    collection.findOne({ username: req.body.username, password: req.body.password }, function (err, user) {
+
         if (err) {
             console.log(err);
             return res.status(500).send();
         }
         if (!user) {
-            res.render('invalid');
-            return res.status(401).send();
+            return res.status(401).send('Unauthorized access!');
         }
-        res.render('staff');
+
+        req.session.user = user;
+        return res.status(200).send('Admin signin successfull!');
     });
 });
 
 router.get('/validate', function (req, res) {
 
-    var db = req.db;
-    var collection = db.get('coachinginstitutes');
-    collection.find({ "valid": "no" }, function (err, institute) {
+    var collection = req.db.collection('coachingInstitutes');
+    collection.find({ "valid": false }, function (err, institute) {
         if (err) {
             console.log(err);
             return res.status(500).send();
         }
-        res.send(institute);
+        return res.status(200).send(institute);
     });
 });
 
-router.get('/validateInstitute', function (req, res) {
+router.post('/validateInstitute', function (req, res) {
 
-    var db = req.db;
-    var name = req.query.name;
-    var collection = db.get('coachinginstitutes');
+    var collection = req.db.collection('coachingInstitutes');
 
-    collection.update({ "name": name }, { "$set": { "valid": "yes" } }, function (err, institute) {
+    collection.update({ name: req.query.name }, { "$set": { valid: true } }, function (err, institute) {
         if (err) {
             console.log(err);
             return res.status(500).send();
         }
-        res.send('done');
+        return res.status(200).send('Institute validated successfully');
     });
 });
 
-router.get('/accommodationDetails', function (req, res) {
-    var db = req.db;
-    var name = req.query.name;
-    var address = req.query.address;
-    var rent = req.query.rent;
-    var location = req.query.location;
-    var city = req.query.city;
-    var collection = db.get('accommodation');
+router.put('/accommodationDetails', function (req, res) {
+
+    var collection = req.db.collection('accommodation');
 
     collection.insert({
-        "name": name,
-        "address": address,
-        "city": city,
-        "location": location,
+        "name": req.query.name,
+        "address": req.query.address,
+        "city": req.query.city,
+        "location": req.query.location,
         "rent": rent
     }, function (err, doc) {
         if (err) {
-            // If it failed, return error
-            res.send("There was a problem adding the information to the database.");
+            return res.status(500).send("There was a problem adding the information to the database.");
         }
         else {
-            res.send('done');
+            return res.status(200).send('Accommodation details added successfully.');
         }
     });
 });
