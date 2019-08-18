@@ -39,7 +39,7 @@ router.post('/institutesignup', function (req, res) {
     });
 });
 
-router.get('/instituteSignin', function (req, res) {
+router.post('/instituteSignin', function (req, res) {
 
     var collection = req.db.collection('coachingInstitutes');
 
@@ -253,7 +253,7 @@ router.post('/profileInstitute', authorize, function (req, res) {
     }
 });
 
-router.get('/accommodationDetails', authorize, function (req, res) {
+router.post('/accommodationDetails', authorize, function (req, res) {
 
     var collection = req.db.collection('accommodation');
 

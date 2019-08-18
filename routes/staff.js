@@ -1,7 +1,7 @@
 var router = require('express').Router();
 var authorize = require('../middlewares/authorization');
 
-router.get('/staffLogin', function (req, res) {
+router.post('/staffLogin', function (req, res) {
 
     var collection = req.db.collection('staff');
 
@@ -20,7 +20,7 @@ router.get('/staffLogin', function (req, res) {
     });
 });
 
-router.get('/validate', function (req, res) {
+router.post('/validate', function (req, res) {
 
     var collection = req.db.collection('coachingInstitutes');
     collection.find({ "valid": false }, function (err, institute) {

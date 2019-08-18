@@ -42,7 +42,7 @@ router.post('/studentSignup', function (req, res) {
     });
 });
 
-router.get('/studentsignin', function (req, res) {
+router.post('/studentsignin', function (req, res) {
 
     var collection = req.db.collection('students');
 
@@ -75,24 +75,20 @@ router.get('/studentsignin', function (req, res) {
 
 router.get('/searchInstitutes', function (req, res) {
 
-    var db = req.db;
-    var tag = req.query.tag;
-    var city = req.query.city;
-    var location = req.query.location;
-    var collection = db.collection('coachinginstitutes');
+    var collection = req.db.collection('coachinginstitutes');
 
-    if (city === "Select") {
+    if (req.query.city === "Select") {
 
-        collection.find({ name: tag }, function (err, institute) {
+        collection.find({ name: req.query.tag }, function (err, institute) {
             if (err) {
                 console.log(err);
                 return res.status(500).send();
             }
-            res.send(institute);
+            return res.status(200).send(institute);
         });
     }
-    else if (location === "SelectLocation") {
-        collection.find({ name: tag }, function (err, institute) {
+    else if (req.query.location === "SelectLocation") {
+        collection.find({ name: req.query.tag }, function (err, institute) {
             if (err) {
                 console.log(err);
                 return res.status(500).send();
@@ -101,27 +97,27 @@ router.get('/searchInstitutes', function (req, res) {
             var result = [];
 
             for (i in institute.branches) {
-                if (institute.branches[i].city === city) {
+                if (institute.branches[i].city === req.query.city) {
                     result.push(institute.branches[i]);
                 }
             }
-            res.send(result);
+            return res.status(200).send(result);
             //res.render('result',{institute: institute});
         });
     }
     else {
-        collection.findOne({ name: tag }, function (err, institute) {
+        collection.findOne({ name: req.query.tag }, function (err, institute) {
             if (err) {
                 console.log(err);
                 return res.status(500).send();
             }
             var i;
             for (i in institute.branches) {
-                if (institute.branches[i].city === city && institute.branches[i].location === location) {
+                if (institute.branches[i].city === req.query.city && institute.branches[i].location === req.query.location) {
                     break;
                 }
             }
-            res.send(institute.branches[i]);
+            return res.status(200).send(institute.branches[i]);
             //res.render('result',{institute: institute});
         });
     }
@@ -151,7 +147,7 @@ router.get('/viewDetails', function (req, res) {
         }
         var avgRating = institute.branches[i].rating / institute.branches[i].rateCount;
         result.avgRating = avgRating.toString();
-        res.send(result);
+        return res.status(200).send(result);
     });
 });
 
@@ -165,10 +161,10 @@ router.post('/profileStudent', function (req, res) {
                 collection.update({ name: req.session.user.name }, { "$set": { "contact": req.body.field } }, function (err, doc) {
 
                     if (err) {
-                        res.send("There was a problem adding the information to the database.");
+                        return res.status(500).send("There was a problem adding the information to the database.");
                     }
                     else {
-                        res.status(200).send('contact updated successfully');
+                        return res.status(200).send('contact updated successfully');
                     }
                 });
             }
@@ -178,7 +174,7 @@ router.post('/profileStudent', function (req, res) {
                 collection.update({ name: req.session.user.name }, { "$set": { "password": field } }, function (err, doc) {
 
                     if (err) {
-                        res.send("There was a problem adding the information to the database.");
+                        return res.status(500).send("There was a problem adding the information to the database.");
                     }
                     else {
                         return res.status(200).send('password updated successfully');
@@ -191,10 +187,10 @@ router.post('/profileStudent', function (req, res) {
                 collection.update({ name: req.session.user.name }, { "$set": { "email": field } }, function (err, doc) {
 
                     if (err) {
-                        res.send("There was a problem adding the information to the database.");
+                        return res.status(500).send("There was a problem adding the information to the database.");
                     }
                     else {
-                        res.status(200).send('email updated successfully');
+                        return res.status(200).send('email updated successfully');
                     }
                 });
             }
@@ -207,13 +203,11 @@ router.post('/rate', function (req, res) {
 
     collection.update({ name: req.body.tag, "branches.branchId": req.body.branchId }, { "$inc": { "branches.$.rating": parseInt(req.body.rating) } }, function (err, institute) {
         if (err) {
-            console.log(err);
             return res.status(500).send();
         }
     });
     collection.update({ name: tag, "branches.branchId": branchId }, { "$inc": { "branches.$.rateCount": 1 } }, function (err, doc) {
         if (err) {
-            console.log('could not rate ' + err);
             return res.status(500).send();
         }
     });
@@ -227,7 +221,6 @@ router.post('/review', authorize, function (req, res) {
 
     collection.updateOne({ name: req.body.tag, "branches.branchId": req.body.branchId }, { "$push": { "branches.$.comment": req.body.comment } }, function (err, institute) {
         if (err) {
-            console.log(err);
             return res.status(500).send();
         }
     });
@@ -242,7 +235,6 @@ router.get('/searchAccommodation', function (req, res) {
     if (req.query.locationAcc === "SelectLocation") {
         collection.find({ "city": req.query.cityAcc }, function (err, acc) {
             if (err) {
-                console.log(err);
                 return res.status(500).send();
             }
             res.send(acc);
@@ -252,10 +244,9 @@ router.get('/searchAccommodation', function (req, res) {
     else {
         collection.find({ "city": city, "location": location }, function (err, acc) {
             if (err) {
-                console.log(err);
                 return res.status(500).send();
             }
-            res.send(acc);
+            return res.status(200).send(acc);
             //res.render('result',{institute: institute});
         });
     }
