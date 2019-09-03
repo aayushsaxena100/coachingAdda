@@ -1,4 +1,5 @@
 var jwt = require('jsonwebtoken');
+var config = require('../config');
 
 module.exports = function (req, res, next) {
 
@@ -16,7 +17,7 @@ module.exports = function (req, res, next) {
     }
 
     try {
-        var isValidAccessToken = jwt.verify(userAccessToken, process.env.SECRET);
+        var isValidAccessToken = jwt.verify(userAccessToken, config.jwt_publicKey, config.jwt_verifyOptions);
         if (isValidAccessToken) {
             res.status(200);
             next();

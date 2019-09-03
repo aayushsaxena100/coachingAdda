@@ -1,75 +1,78 @@
 var authorize = require('../middlewares/authorization');
 var router = require('express').Router();
-const bcrypt = require('bcrypt');
+var mongoose = require('mongoose');
+var Student = mongoose.connection.model('Student', require('../schemas/studentSchema'));
+var enums = require('../enums');
+var config = require('../config');
 const jwt = require('jsonwebtoken');
-const saltRounds = 10;
 
 router.post('/studentSignup', function (req, res) {
 
-    var collection = req.db.collection('students');
-
-    collection.findOne({ email: req.body.email }, function (err, user) {
-
-        if (err) {
-            console.log(err);
-            return res.status(500).send('There was some error in sigining you up. Please try again after some time.');
-        }
-        else if (user) {
-            return res.status(500).send('A student by that email already exists.');
-        }
+    var student = new Student({
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password
     });
 
-    bcrypt.hash(req.body.password, saltRounds, function (err, passwordHash) {
+    Student.SignUp(student, function (SignUpStatus) {
 
-        if (err) {
-            console.log(err);
-            res.status(500).send('There was some error in sigining you up. Please try again after some time.');
+        switch (SignUpStatus) {
+            case enums.LoginAndSignUpStatus.Error: {
+                return res.status(500).send('Some error occured');
+            }
+
+            case enums.LoginAndSignUpStatus.AlreadyExists: {
+                return res.status(422).send('Student already exists by that email');
+            }
+
+            case enums.LoginAndSignUpStatus.Registered: {
+                return res.status(200).send('Sign Up Successful');
+            }
+
+            default: {
+                return res.status(500).send('Something has gone wrong. This should not have happened!');
+            }
         }
-        collection.insertOne({
-            "email": req.body.email,
-            "password": passwordHash,
-            "name": req.body.name
-        }, function (err, doc) {
-            if (err) {
-                // If it failed, return error
-                res.send("There was a problem adding the information to the database.");
-            }
-            else {
-                // And forward to success page
-                res.render('login');
-            }
-        });
     });
 });
 
 router.post('/studentsignin', function (req, res) {
 
-    var collection = req.db.collection('students');
+    Student.Login(req.body, function (LoginStatus) {
 
-    collection.findOne({ email: req.body.email }, function (err, user) {
-        if (err) {
-            console.log(err);
-            return res.status(500).send();
-        }
-        bcrypt.compare(req.body.password, user.password, function (err, result) {
-            if (err) {
-                console.log(err);
-                return res.status(500).send('There was some error in logging you in.');
+        switch (LoginStatus) {
+            case enums.LoginAndSignUpStatus.Error: {
+                return res.status(500).send('Some error occured');
             }
-            if (!result) {
-                res.render('invalid');
-                return res.status(401).send();
+
+            case enums.LoginAndSignUpStatus.DoesNotExist: {
+                return res.status(500).send('Student does not exists by that email');
             }
-            else {
-                const jwtPayload = {
-                    user_id: user._id
+
+            case enums.LoginAndSignUpStatus.Unauthorized: {
+                return res.status(401).send('Email or password didn\'t quite match');
+            }
+
+            case enums.LoginAndSignUpStatus.Authorized: {
+
+                req.session.user = {
+                    email: req.body.email
                 }
-                const authJwtToken = jwt.sign(jwtPayload, process.env.SECRET);
+
+                const jwtPayload = {
+                    user_id: req.body.email
+                }
+
+                const authJwtToken = jwt.sign(jwtPayload, config.jwt_privateKey/*process.env.JWT_PRIVATE_KEY*/, config.jwt_signinOptions);
                 res.set('Authorization', authJwtToken);
 
                 return res.status(200).send({ accessToken: authJwtToken });
             }
-        });
+
+            default: {
+                return res.status(500).send('Something has gone wrong. This should not have happened!');
+            }
+        }
     });
 });
 
@@ -123,11 +126,11 @@ router.get('/searchInstitutes', function (req, res) {
     }
 });
 
-router.get('/viewDetails', function (req, res) {
+router.get('/viewDetails', authorize, function (req, res) {
 
     var collection = req.db.collection('coachinginstitutes');
 
-    collection.findOne({ name: req.query.tag }, function (err, institute) {
+    collection.findOne({ name: req.body.tag }, function (err, institute) {
         if (err) {
             console.log(err);
             return res.status(500).send();
