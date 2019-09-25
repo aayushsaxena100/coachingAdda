@@ -1,10 +1,10 @@
 var authorize = require('../middlewares/authorization');
 var router = require('express').Router();
-var mongoose = require('mongoose');
-var Student = mongoose.connection.model('Student', require('../schemas/studentSchema'));
+var Institute = require('../schemas/instituteSchema');
 var enums = require('../enums');
 var config = require('../config');
 const jwt = require('jsonwebtoken');
+var Student = require('../schemas/studentSchema');
 
 router.post('/studentSignup', function (req, res) {
 
@@ -38,7 +38,12 @@ router.post('/studentSignup', function (req, res) {
 
 router.post('/studentsignin', function (req, res) {
 
-    Student.Login(req.body, function (LoginStatus) {
+    var student = new Student({
+        email: req.body.email,
+        password: req.body.password
+    });
+
+    student.Login(function (LoginStatus) {
 
         switch (LoginStatus) {
             case enums.LoginAndSignUpStatus.Error: {
@@ -63,7 +68,7 @@ router.post('/studentsignin', function (req, res) {
                     user_id: req.body.email
                 }
 
-                const authJwtToken = jwt.sign(jwtPayload, config.jwt_privateKey/*process.env.JWT_PRIVATE_KEY*/, config.jwt_signinOptions);
+                const authJwtToken = jwt.sign(jwtPayload, process.env.JWT_PRIVATE_KEY, config.jwt_signinOptions);
                 res.set('Authorization', authJwtToken);
 
                 return res.status(200).send({ accessToken: authJwtToken });
@@ -76,54 +81,22 @@ router.post('/studentsignin', function (req, res) {
     });
 });
 
-router.get('/searchInstitutes', function (req, res) {
+router.get('/searchInstitutes', authorize, function (req, res) {
 
-    var collection = req.db.collection('coachinginstitutes');
+    Institute.SearchInstitutes(req.query, function (err, institutes) {
+        if (err) {
 
-    if (req.query.city === "Select") {
+            return res.status(500).send('Some error occured');
+        }
+        else if (!institutes) {
 
-        collection.find({ name: req.query.tag }, function (err, institute) {
-            if (err) {
-                console.log(err);
-                return res.status(500).send();
-            }
-            return res.status(200).send(institute);
-        });
-    }
-    else if (req.query.location === "SelectLocation") {
-        collection.find({ name: req.query.tag }, function (err, institute) {
-            if (err) {
-                console.log(err);
-                return res.status(500).send();
-            }
-            var i;
-            var result = [];
+            return res.status(404).send('No institute found with specified search criteria!');
+        }
+        else {
 
-            for (i in institute.branches) {
-                if (institute.branches[i].city === req.query.city) {
-                    result.push(institute.branches[i]);
-                }
-            }
-            return res.status(200).send(result);
-            //res.render('result',{institute: institute});
-        });
-    }
-    else {
-        collection.findOne({ name: req.query.tag }, function (err, institute) {
-            if (err) {
-                console.log(err);
-                return res.status(500).send();
-            }
-            var i;
-            for (i in institute.branches) {
-                if (institute.branches[i].city === req.query.city && institute.branches[i].location === req.query.location) {
-                    break;
-                }
-            }
-            return res.status(200).send(institute.branches[i]);
-            //res.render('result',{institute: institute});
-        });
-    }
+            return res.status(200).send(institutes);
+        }
+    });
 });
 
 router.get('/viewDetails', authorize, function (req, res) {

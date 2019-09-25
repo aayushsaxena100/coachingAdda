@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var enums = require('../enums');
-const bcrypt = require('bcrypt');
+var bcrypt = require('bcrypt');
+var redis = require('../middlewares/redis');
 const saltRounds = 10;
 
 var studentSchema = mongoose.Schema({
@@ -11,7 +12,7 @@ var studentSchema = mongoose.Schema({
 
 /* --------------------------------------------------------- */
 
-studentSchema.statics.SignUp = async (student, callback) => {
+studentSchema.statics.SignUp = async function (student, callback) {
 
     var dbData = await GetStudent(student);
 
@@ -36,32 +37,105 @@ studentSchema.statics.SignUp = async (student, callback) => {
         student.password = passwordHash;
 
         mongoose.connection.model('Student').create(student, function (err, data) {
+
             if (err) {
 
                 console.log(err);
                 return callback(enums.LoginAndSignUpStatus.Error);
             }
 
-            return callback(enums.LoginAndSignUpStatus.Registered);
+            if (data) {
+
+                redis.saveStudentInCache(data.email, data, function (isCached) {
+
+                    if (isCached) {
+                        console.log('student details cached');
+                    }
+                });
+
+                return callback(enums.LoginAndSignUpStatus.Registered);
+            }
         });
     });
 }
 
-studentSchema.statics.Login = async (student, callback) => {
+studentSchema.methods.Login = function (callback) {
 
-    var dbData = await GetStudent(student);
+    var studentPassword = this.password;
+    var studentEmail = this.email;
+    var studentModel = this.model('Student');
 
-    if (dbData.error != null) {
+    redis.lookUpStudentInCache(studentEmail, function (studentFromCache) {
 
-        return callback(enums.LoginAndSignUpStatus.Error);
+        if (studentFromCache) {
+
+            console.log('student found in cache for login');
+            return CheckPassword(studentPassword, studentFromCache.password, callback);
+        }
+
+        studentModel.findOne({ email: studentEmail }, function (err, studentFromDb) {
+
+            if (err) {
+
+                return callback(enums.LoginAndSignUpStatus.Error);
+            }
+
+            if (studentFromDb == null) {
+
+                return callback(enums.LoginAndSignUpStatus.DoesNotExist);
+            }
+
+            return CheckPassword(studentPassword, studentFromDb.password, callback);
+        });
+    });
+}
+
+async function GetStudent(student) {
+
+    let studentData;
+
+    var isCacheHit = false;
+
+    redis.lookUpStudentInCache(student.email, function (studentFromCache) {
+        if (studentFromCache) {
+
+            isCacheHit = studentFromCache != null;
+            studentData = studentFromCache;
+        }
+    });
+
+    if (isCacheHit) {
+
+        return { error: null, student: studentData };
     }
 
-    if (dbData.student == null) {
+    await mongoose.connection.model('Student').findOne({ email: student.email }, function (err, studentFromDb) {
 
-        return callback(enums.LoginAndSignUpStatus.DoesNotExist);
-    }
+        if (err) {
 
-    bcrypt.compare(student.password, dbData.student.password, function (err, isPasswordCorrect) {
+            console.log(err);
+            return { error: err, student: null };
+        }
+
+        if (studentFromDb) {
+
+            redis.saveStudentInCache(student.email, studentFromDb, function (isSuccessful) {
+
+                if (!isSuccessful) {
+
+                    return { error: 'There was some error in saving to redis cache!', student: null };
+                }
+            });
+        }
+        studentData = studentFromDb;
+    });
+
+    return { error: null, student: studentData };
+}
+
+function CheckPassword(inputPassword, actualPassword, callback) {
+
+    bcrypt.compare(inputPassword, actualPassword, function (err, isPasswordCorrect) {
 
         if (err) {
 
@@ -74,25 +148,8 @@ studentSchema.statics.Login = async (student, callback) => {
             return callback(enums.LoginAndSignUpStatus.Unauthorized);
         }
 
-        callback(enums.LoginAndSignUpStatus.Authorized);
+        return callback(enums.LoginAndSignUpStatus.Authorized);
     });
 }
 
-async function GetStudent(student) {
-
-    let studentData;
-    await mongoose.connection.model('Student').findOne({ email: student.email }, function (err, studentFromDb) {
-
-        if (err) {
-
-            console.log(err);
-            return { error: err, student: null };
-        }
-
-        studentData = studentFromDb;
-    });
-    console.log(studentData);
-    return { error: null, student: studentData };
-}
-
-module.exports = studentSchema;
+module.exports = mongoose.model('Student', studentSchema);

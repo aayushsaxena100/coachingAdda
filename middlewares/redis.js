@@ -1,3 +1,5 @@
+var config = require('../config');
+
 var redis = require('redis').createClient({
     host: config.redisConf.host,
     port: config.redisConf.port,
@@ -5,12 +7,37 @@ var redis = require('redis').createClient({
     auth_pass: config.redisConf.password
 });
 
-module.exports = () => {
-    redis.on('connect', () => {
-        console.log('connected to redis');
-    });
+redis.on('connect', function () {
 
-    redis.on('error', err => {
-        console.log(`Error: ${err}`);
+    console.log('connected to redis');
+});
+
+redis.on('err', function (err) {
+
+    console.log(err);
+});
+
+exports.lookUpStudentInCache = function (email, callback) {
+    var key = "students-" + email;
+
+    redis.get(key, function (err, stringReply) {
+
+        if (err) {
+            console.log(err);
+            callback(null);
+        }
+
+        callback(JSON.parse(stringReply));
     });
+}
+
+exports.saveStudentInCache = function (key, student, callback) {
+
+    try {
+        redis.setex("students-" + key, 3600 * 24, JSON.stringify(student));
+        callback(true);
+    }
+    catch (e) {
+        callback(false);
+    }
 }

@@ -8,8 +8,8 @@ module.exports = {
         port: '18570',
         password: process.env.REDIS_PASSWORD
     },
-    jwt_publicKey: fileSystem.readFileSync('./jwt_rsa.pub', 'utf8'),
-    jwt_privateKey: fileSystem.readFileSync('../jwt_rsa', 'utf8'),
-    jwt_signinOptions: { expiresIn: "12h", algorithm: "RS256" },
-    jwt_verifyOptions: { expiresIn: "12h", algorithm: ["RS256"] }
+    jwt_publicKey: fileSystem.readFileSync('./jwtRS256.key.pub'),
+    jwt_privateKey: fileSystem.readFileSync('../jwtRS256.key'),
+    jwt_signinOptions: { expiresIn: "1h", algorithm: "RS256" },
+    jwt_verifyOptions: { algorithms: ["RS256"] }
 };
